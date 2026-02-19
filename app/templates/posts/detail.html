@@ -8,7 +8,7 @@
       <div class="card-header d-flex justify-content-between align-items-start">
         <div>
           <h3 class="mb-1">{{ post.game }}</h3>
-          <span class="badge bg-secondary me-1">{{ post.platform }}</span>
+          {% for p in post.platform_list %}<span class="badge bg-secondary me-1">{{ p }}</span>{% endfor %}
           <span class="badge bg-primary">{{ accepted_count + 1 }}/{{ post.max_players }} players</span>
         </div>
         {% if current_user and current_user.id == post.author_id %}

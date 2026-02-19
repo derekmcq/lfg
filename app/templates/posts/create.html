@@ -17,17 +17,21 @@
                    value="{{ form.game or '' }}">
           </div>
           <div class="mb-3">
-            <label class="form-label">Platform</label>
-            <select name="platform" class="form-select" required>
-              <option value="">Select platform…</option>
-              {% for p in platforms %}
-              <option value="{{ p }}" {% if form.platform == p %}selected{% endif %}>{{ p }}</option>
-              {% endfor %}
-            </select>
+            <label class="form-label">Platform(s)</label>
+            {% for p in platforms %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="platform" value="{{ p }}" id="platform-{{ p }}"
+                     {% if form.platform and p in form.platform %}checked{% endif %}>
+              <label class="form-check-label" for="platform-{{ p }}">{{ p }}</label>
+            </div>
+            {% endfor %}
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea name="description" class="form-control" rows="5" required>{{ form.description or '' }}</textarea>
+            <textarea name="description" class="form-control {% if errors.description %}is-invalid{% endif %}" rows="5" required>{{ form.description or '' }}</textarea>
+            {% if errors.description %}
+            <div class="invalid-feedback">{{ errors.description }}</div>
+            {% endif %}
           </div>
           <div class="row">
             <div class="col-sm-6 mb-3">

@@ -10,6 +10,7 @@ from app.models.post import Post
 from app.models.membership import Membership
 from app.schemas.post import VALID_PLATFORMS
 from app.flash import flash
+from better_profanity import profanity
 
 router = APIRouter(prefix="/posts")
 templates = Jinja2Templates(directory="app/templates")
@@ -31,7 +32,7 @@ def list_posts(
     if game:
         query = query.filter(Post.game.ilike(f"%{game}%"))
     if platform:
-        query = query.filter(Post.platform == platform)
+        query = query.filter(Post.platform.contains(platform))
     posts = query.order_by(Post.created_at.desc()).all()
 
     for post in posts:
@@ -57,7 +58,7 @@ def new_post_form(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/auth/login", status_code=303)
     return templates.TemplateResponse(
         "posts/create.html",
-        {"request": request, "platforms": VALID_PLATFORMS, "form": {}, "current_user": current_user},
+        {"request": request, "platforms": VALID_PLATFORMS, "form": {}, "errors": {}, "current_user": current_user},
     )
 
 
@@ -65,7 +66,7 @@ def new_post_form(request: Request, db: Session = Depends(get_db)):
 def create_post(
     request: Request,
     game: str = Form(...),
-    platform: str = Form(...),
+    platform: list[str] = Form(...),
     description: str = Form(...),
     max_players: int = Form(4),
     scheduled_at: Optional[str] = Form(None),
@@ -74,6 +75,19 @@ def create_post(
     current_user = get_current_user(request, db)
     if not current_user:
         return RedirectResponse(url="/auth/login", status_code=303)
+
+    errors = {}
+    if profanity.contains_profanity(description):
+        errors["description"] = "Description contains inappropriate language."
+
+    if errors:
+        form = {"game": game, "platform": platform, "description": description,
+                "max_players": max_players, "scheduled_at": scheduled_at or ""}
+        return templates.TemplateResponse(
+            "posts/create.html",
+            {"request": request, "platforms": VALID_PLATFORMS, "form": form,
+             "errors": errors, "current_user": current_user},
+        )
 
     from datetime import datetime
     sched = None
@@ -86,7 +100,7 @@ def create_post(
     post = Post(
         author_id=current_user.id,
         game=game,
-        platform=platform,
+        platform=",".join(platform),
         description=description,
         max_players=max_players,
         scheduled_at=sched,
@@ -157,7 +171,7 @@ def edit_post(
     request: Request,
     post_id: int,
     game: str = Form(...),
-    platform: str = Form(...),
+    platform: list[str] = Form(...),
     description: str = Form(...),
     max_players: int = Form(...),
     scheduled_at: Optional[str] = Form(None),
@@ -171,6 +185,10 @@ def edit_post(
         flash(request, "Not found or not authorized.", "danger")
         return RedirectResponse(url="/posts", status_code=303)
 
+    if profanity.contains_profanity(description):
+        flash(request, "Description contains inappropriate language.", "danger")
+        return RedirectResponse(url=f"/posts/{post_id}/edit", status_code=303)
+
     from datetime import datetime
     sched = None
     if scheduled_at:
@@ -180,7 +198,7 @@ def edit_post(
             pass
 
     post.game = game
-    post.platform = platform
+    post.platform = ",".join(platform)
     post.description = description
     post.max_players = max_players
     post.scheduled_at = sched

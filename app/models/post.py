@@ -12,7 +12,11 @@ class Post(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     author_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     game: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
-    platform: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
+    platform: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
+
+    @property
+    def platform_list(self) -> list[str]:
+        return [p.strip() for p in self.platform.split(",") if p.strip()]
     description: Mapped[str] = mapped_column(Text, nullable=False)
     max_players: Mapped[int] = mapped_column(Integer, default=4, nullable=False)
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -17,12 +17,14 @@
                    value="{{ post.game }}">
           </div>
           <div class="mb-3">
-            <label class="form-label">Platform</label>
-            <select name="platform" class="form-select" required>
-              {% for p in platforms %}
-              <option value="{{ p }}" {% if post.platform == p %}selected{% endif %}>{{ p }}</option>
-              {% endfor %}
-            </select>
+            <label class="form-label">Platform(s)</label>
+            {% for p in platforms %}
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="platform" value="{{ p }}" id="platform-{{ p }}"
+                     {% if p in post.platform_list %}checked{% endif %}>
+              <label class="form-check-label" for="platform-{{ p }}">{{ p }}</label>
+            </div>
+            {% endfor %}
           </div>
           <div class="mb-3">
             <label class="form-label">Description</label>

@@ -17,7 +17,7 @@
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
             <a href="/posts/{{ post.id }}" class="fw-semibold text-decoration-none">{{ post.game }}</a>
-            <span class="badge bg-secondary ms-1">{{ post.platform }}</span>
+            {% for p in post.platform_list %}<span class="badge bg-secondary ms-1">{{ p }}</span>{% endfor %}
           </div>
           <div class="d-flex align-items-center gap-2">
             <small class="text-muted">{{ post.accepted_count + 1 }}/{{ post.max_players }}</small>
@@ -43,7 +43,7 @@
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
             <a href="/posts/{{ m.post.id }}" class="fw-semibold text-decoration-none">{{ m.post.game }}</a>
-            <span class="badge bg-secondary ms-1">{{ m.post.platform }}</span>
+            {% for p in m.post.platform_list %}<span class="badge bg-secondary ms-1">{{ p }}</span>{% endfor %}
             <small class="text-muted ms-2">by {{ m.post.author.username }}</small>
           </div>
           <form action="/posts/{{ m.post.id }}/leave" method="post">
