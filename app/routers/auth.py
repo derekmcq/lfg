@@ -1,5 +1,7 @@
 import re
 
+from better_profanity import profanity
+
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -32,6 +34,8 @@ def register(
 
     if not re.fullmatch(r"[A-Za-z0-9_]+", username):
         errors["username"] = "Username may only contain letters, numbers, and underscores."
+    elif profanity.contains_profanity(username):
+        errors["username"] = "Username contains inappropriate language."
     elif db.query(User).filter(User.username == username).first():
         errors["username"] = "Username already taken."
 
