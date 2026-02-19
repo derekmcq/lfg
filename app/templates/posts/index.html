@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Browse LFG{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Looking For Group</h2>
+  {% if request.session.username %}
+  <a href="/posts/new" class="btn btn-primary">+ Post LFG</a>
+  {% endif %}
+</div>
+
+<form method="get" action="/posts" class="row g-2 mb-4">
+  <div class="col-sm-5">
+    <input type="text" name="game" class="form-control" placeholder="Filter by game…"
+           value="{{ filter_game or '' }}">
+  </div>
+  <div class="col-sm-4">
+    <select name="platform" class="form-select">
+      <option value="">All platforms</option>
+      {% for p in platforms %}
+      <option value="{{ p }}" {% if filter_platform == p %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-3">
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-outline-primary flex-fill">Filter</button>
+      <a href="/posts" class="btn btn-outline-secondary">Clear</a>
+    </div>
+  </div>
+</form>
+
+{% if posts %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+  {% for post in posts %}
+  <div class="col">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-start">
+        <div>
+          <h5 class="mb-1">{{ post.game }}</h5>
+          <span class="badge bg-secondary">{{ post.platform }}</span>
+        </div>
+        <span class="badge bg-primary">
+          {{ post.accepted_count + 1 }}/{{ post.max_players }}
+        </span>
+      </div>
+      <div class="card-body">
+        <p class="card-text text-muted" style="white-space:pre-line">{{ post.description[:200] }}{% if post.description|length > 200 %}…{% endif %}</p>
+      </div>
+      <div class="card-footer d-flex justify-content-between align-items-center">
+        <small class="text-muted">by {{ post.author.username }}</small>
+        <a href="/posts/{{ post.id }}" class="btn btn-sm btn-outline-primary">View</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+  <p class="fs-5">No LFG posts found.</p>
+  {% if request.session.username %}
+  <a href="/posts/new" class="btn btn-primary">Be the first to post!</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

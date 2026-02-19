@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Join Requests — LFG{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-3 mb-3">
+  <a href="/posts/{{ post.id }}" class="btn btn-outline-secondary btn-sm">← Back</a>
+  <h3 class="mb-0">Join Requests for <em>{{ post.game }}</em></h3>
+</div>
+
+{% if requests %}
+<div class="card">
+  <ul class="list-group list-group-flush">
+    {% for m in requests %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ m.user.username }}</strong>
+        <small class="text-muted ms-2">requested {{ m.requested_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
+      <div class="d-flex gap-2">
+        <form action="/posts/{{ post.id }}/requests/{{ m.id }}/accept" method="post">
+          <button class="btn btn-sm btn-success">Accept</button>
+        </form>
+        <form action="/posts/{{ post.id }}/requests/{{ m.id }}/deny" method="post">
+          <button class="btn btn-sm btn-danger">Deny</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<p class="text-muted">No pending requests.</p>
+{% endif %}
+{% endblock %}

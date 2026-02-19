@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ post.game }} — LFG{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-start">
+        <div>
+          <h3 class="mb-1">{{ post.game }}</h3>
+          <span class="badge bg-secondary me-1">{{ post.platform }}</span>
+          <span class="badge bg-primary">{{ accepted_count + 1 }}/{{ post.max_players }} players</span>
+        </div>
+        {% if current_user and current_user.id == post.author_id %}
+        <div class="d-flex gap-2">
+          <a href="/posts/{{ post.id }}/requests" class="btn btn-sm btn-outline-warning">
+            Requests
+            {% if pending_count > 0 %}
+            <span class="badge bg-warning text-dark ms-1">{{ pending_count }}</span>
+            {% endif %}
+          </a>
+          <a href="/posts/{{ post.id }}/edit" class="btn btn-sm btn-outline-secondary">Edit</a>
+          <form action="/posts/{{ post.id }}/delete" method="post"
+                onsubmit="return confirm('Delete this post?')">
+            <button class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if post.scheduled_at %}
+        <p class="text-muted mb-2">
+          <strong>Scheduled:</strong>
+          {{ post.scheduled_at.strftime('%Y-%m-%d %H:%M UTC') }}
+        </p>
+        {% endif %}
+        <p style="white-space:pre-line">{{ post.description }}</p>
+      </div>
+      <div class="card-footer text-muted">
+        Posted by <strong>{{ post.author.username }}</strong>
+        on {{ post.created_at.strftime('%Y-%m-%d') }}
+      </div>
+    </div>
+
+    {# Join/status controls #}
+    <div class="mb-4">
+      {% if not current_user %}
+        <a href="/auth/login" class="btn btn-outline-primary">Login to request to join</a>
+      {% elif current_user.id == post.author_id %}
+        <span class="text-muted">You created this post.</span>
+      {% elif membership %}
+        {% if membership.status == "pending" %}
+          <span class="badge bg-warning text-dark fs-6 me-2">Request pending</span>
+          <form action="/posts/{{ post.id }}/withdraw" method="post" class="d-inline">
+            <button class="btn btn-sm btn-outline-danger">Withdraw</button>
+          </form>
+        {% elif membership.status == "accepted" %}
+          <span class="badge bg-success fs-6 me-2">Joined</span>
+          <form action="/posts/{{ post.id }}/leave" method="post" class="d-inline">
+            <button class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Leave this group?')">Leave Group</button>
+          </form>
+        {% elif membership.status == "denied" %}
+          <span class="badge bg-danger fs-6 me-2">Request denied</span>
+          <form action="/posts/{{ post.id }}/request" method="post" class="d-inline">
+            <button class="btn btn-sm btn-outline-primary">Re-request</button>
+          </form>
+        {% endif %}
+      {% elif accepted_count + 1 >= post.max_players %}
+        <button class="btn btn-secondary" disabled>Group Full</button>
+      {% else %}
+        <form action="/posts/{{ post.id }}/request" method="post" class="d-inline">
+          <button class="btn btn-primary">Request to Join</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Members ({{ accepted_count + 1 }}/{{ post.max_players }})</h5>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex align-items-center gap-2">
+          <span class="badge bg-warning text-dark">Author</span>
+          {{ post.author.username }}
+        </li>
+        {% for m in members %}
+        <li class="list-group-item">{{ m.user.username }}</li>
+        {% endfor %}
+        {% for _ in range(post.max_players - 1 - members|length) %}
+        <li class="list-group-item text-muted fst-italic">Open slot</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}New LFG Post{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Create LFG Post</h4>
+      </div>
+      <div class="card-body p-4">
+        <form method="post" action="/posts/new">
+          <div class="mb-3">
+            <label class="form-label">Game</label>
+            <input type="text" name="game" class="form-control" required maxlength="100"
+                   value="{{ form.game or '' }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Platform</label>
+            <select name="platform" class="form-select" required>
+              <option value="">Select platform…</option>
+              {% for p in platforms %}
+              <option value="{{ p }}" {% if form.platform == p %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="5" required>{{ form.description or '' }}</textarea>
+          </div>
+          <div class="row">
+            <div class="col-sm-6 mb-3">
+              <label class="form-label">Max Players</label>
+              <input type="number" name="max_players" class="form-control" min="2" max="100"
+                     value="{{ form.max_players or 4 }}" required>
+            </div>
+            <div class="col-sm-6 mb-3">
+              <label class="form-label">Scheduled At <span class="text-muted">(optional)</span></label>
+              <input type="datetime-local" name="scheduled_at" class="form-control"
+                     value="{{ form.scheduled_at or '' }}">
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Post</button>
+            <a href="/posts" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

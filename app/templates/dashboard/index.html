@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — LFG{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row">
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">My Posts</h5>
+        <a href="/posts/new" class="btn btn-sm btn-primary">+ New</a>
+      </div>
+      {% if my_posts %}
+      <ul class="list-group list-group-flush">
+        {% for post in my_posts %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <a href="/posts/{{ post.id }}" class="fw-semibold text-decoration-none">{{ post.game }}</a>
+            <span class="badge bg-secondary ms-1">{{ post.platform }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <small class="text-muted">{{ post.accepted_count + 1 }}/{{ post.max_players }}</small>
+            <a href="/posts/{{ post.id }}/edit" class="btn btn-sm btn-outline-secondary">Edit</a>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="card-body text-muted">You haven't created any posts yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-0">Groups I've Joined</h5>
+      </div>
+      {% if joined_groups %}
+      <ul class="list-group list-group-flush">
+        {% for m in joined_groups %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <a href="/posts/{{ m.post.id }}" class="fw-semibold text-decoration-none">{{ m.post.game }}</a>
+            <span class="badge bg-secondary ms-1">{{ m.post.platform }}</span>
+            <small class="text-muted ms-2">by {{ m.post.author.username }}</small>
+          </div>
+          <form action="/posts/{{ m.post.id }}/leave" method="post">
+            <button class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Leave this group?')">Leave</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="card-body text-muted">You haven't joined any groups yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if pending_requests %}
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="mb-0">Pending Requests</h5>
+  </div>
+  <ul class="list-group list-group-flush">
+    {% for m in pending_requests %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <a href="/posts/{{ m.post.id }}" class="fw-semibold text-decoration-none">{{ m.post.game }}</a>
+        <span class="badge bg-warning text-dark ms-1">Pending</span>
+      </div>
+      <form action="/posts/{{ m.post.id }}/withdraw" method="post">
+        <button class="btn btn-sm btn-outline-danger">Withdraw</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}
