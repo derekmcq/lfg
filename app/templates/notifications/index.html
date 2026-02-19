@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Notifications — LFG{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Notifications</h2>
+
+{% if notifications %}
+<div class="list-group">
+  {% for n in notifications %}
+  <div class="list-group-item {% if not n.is_read %}border-start border-primary border-3{% endif %} py-3">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        {% if n.link %}
+        <a href="{{ n.link }}" class="text-decoration-none text-reset fw-semibold">{{ n.message }}</a>
+        {% else %}
+        <span class="fw-semibold">{{ n.message }}</span>
+        {% endif %}
+      </div>
+      <small class="text-muted ms-3 text-nowrap">{{ n.created_at.strftime("%b %d, %Y %I:%M %p") }}</small>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">No notifications yet.</p>
+{% endif %}
+{% endblock %}

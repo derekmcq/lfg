@@ -23,3 +23,6 @@ class User(Base):
     memberships: Mapped[list["Membership"]] = relationship(
         "Membership", back_populates="user", cascade="all, delete-orphan"
     )
+    notifications: Mapped[list["Notification"]] = relationship(
+        "Notification", back_populates="user", cascade="all, delete-orphan"
+    )

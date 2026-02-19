@@ -9,9 +9,16 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.post import Post
 from app.models.membership import Membership
+from app.models.notification import Notification
 from app.flash import flash
 
 router = APIRouter(prefix="/posts")
+
+
+def _notify(db, user_id: int, message: str, link: str = None):
+    db.add(Notification(user_id=user_id, message=message, link=link))
+
+
 templates = Jinja2Templates(directory="app/templates")
 
 
@@ -37,6 +44,7 @@ def request_join(request: Request, post_id: int, db: Session = Depends(get_db)):
         existing.status = "pending"
         existing.requested_at = datetime.now(timezone.utc)
         existing.responded_at = None
+        _notify(db, post.author_id, f"{current_user.username} requested to join your {post.game} group", f"/posts/{post_id}/requests")
         db.commit()
         flash(request, "Re-request sent!", "success")
         return RedirectResponse(url=f"/posts/{post_id}", status_code=303)
@@ -48,6 +56,7 @@ def request_join(request: Request, post_id: int, db: Session = Depends(get_db)):
 
     m = Membership(user_id=current_user.id, post_id=post_id, status="pending")
     db.add(m)
+    _notify(db, post.author_id, f"{current_user.username} requested to join your {post.game} group", f"/posts/{post_id}/requests")
     db.commit()
     flash(request, "Join request sent!", "success")
     return RedirectResponse(url=f"/posts/{post_id}", status_code=303)
@@ -119,6 +128,7 @@ def accept_request(request: Request, post_id: int, membership_id: int, db: Sessi
     if m:
         m.status = "accepted"
         m.responded_at = datetime.now(timezone.utc)
+        _notify(db, m.user_id, f"Your request to join {post.game} was accepted!", f"/posts/{post_id}")
         db.commit()
         flash(request, f"{m.user.username} accepted!", "success")
     return RedirectResponse(url=f"/posts/{post_id}/requests", status_code=303)
@@ -139,6 +149,7 @@ def deny_request(request: Request, post_id: int, membership_id: int, db: Session
     if m:
         m.status = "denied"
         m.responded_at = datetime.now(timezone.utc)
+        _notify(db, m.user_id, f"Your request to join {post.game} was denied.", f"/posts/{post_id}")
         db.commit()
         flash(request, f"{m.user.username} denied.", "info")
     return RedirectResponse(url=f"/posts/{post_id}/requests", status_code=303)

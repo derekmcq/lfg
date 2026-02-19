@@ -54,6 +54,17 @@
       </ul>
       <ul class="navbar-nav">
         {% if request.session.username %}
+        {% set unread = get_unread_count(request) %}
+        <li class="nav-item">
+          <a class="nav-link position-relative" href="/notifications">
+            🔔
+            {% if unread > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              {{ unread }}
+            </span>
+            {% endif %}
+          </a>
+        </li>
         <li class="nav-item"><span class="nav-link text-muted">{{ request.session.username }}</span></li>
         <li class="nav-item">
           <form action="/auth/logout" method="post" class="d-inline">
