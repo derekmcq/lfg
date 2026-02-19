@@ -47,6 +47,7 @@
             <small class="text-muted ms-2">by {{ m.post.author.username }}</small>
           </div>
           <form action="/posts/{{ m.post.id }}/leave" method="post">
+            {{ csrf_input(request) | safe }}
             <button class="btn btn-sm btn-outline-danger"
                     onclick="return confirm('Leave this group?')">Leave</button>
           </form>
@@ -73,6 +74,7 @@
         <span class="badge bg-warning text-dark ms-1">Pending</span>
       </div>
       <form action="/posts/{{ m.post.id }}/withdraw" method="post">
+        {{ csrf_input(request) | safe }}
         <button class="btn btn-sm btn-outline-danger">Withdraw</button>
       </form>
     </li>

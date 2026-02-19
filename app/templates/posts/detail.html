@@ -22,6 +22,7 @@
           <a href="/posts/{{ post.id }}/edit" class="btn btn-sm btn-outline-secondary">Edit</a>
           <form action="/posts/{{ post.id }}/delete" method="post"
                 onsubmit="return confirm('Delete this post?')">
+            {{ csrf_input(request) | safe }}
             <button class="btn btn-sm btn-outline-danger">Delete</button>
           </form>
         </div>
@@ -52,17 +53,20 @@
         {% if membership.status == "pending" %}
           <span class="badge bg-warning text-dark fs-6 me-2">Request pending</span>
           <form action="/posts/{{ post.id }}/withdraw" method="post" class="d-inline">
+            {{ csrf_input(request) | safe }}
             <button class="btn btn-sm btn-outline-danger">Withdraw</button>
           </form>
         {% elif membership.status == "accepted" %}
           <span class="badge bg-success fs-6 me-2">Joined</span>
           <form action="/posts/{{ post.id }}/leave" method="post" class="d-inline">
+            {{ csrf_input(request) | safe }}
             <button class="btn btn-sm btn-outline-danger"
                     onclick="return confirm('Leave this group?')">Leave Group</button>
           </form>
         {% elif membership.status == "denied" %}
           <span class="badge bg-danger fs-6 me-2">Request denied</span>
           <form action="/posts/{{ post.id }}/request" method="post" class="d-inline">
+            {{ csrf_input(request) | safe }}
             <button class="btn btn-sm btn-outline-primary">Re-request</button>
           </form>
         {% endif %}
@@ -70,6 +74,7 @@
         <button class="btn btn-secondary" disabled>Group Full</button>
       {% else %}
         <form action="/posts/{{ post.id }}/request" method="post" class="d-inline">
+          {{ csrf_input(request) | safe }}
           <button class="btn btn-primary">Request to Join</button>
         </form>
       {% endif %}

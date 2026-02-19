@@ -10,6 +10,7 @@
       </div>
       <div class="card-body p-4">
         <form method="post" action="/auth/login">
+          {{ csrf_input(request) | safe }}
           <div class="mb-3">
             <label class="form-label">Username</label>
             <input type="text" name="username" class="form-control" required

@@ -57,6 +57,7 @@
         <li class="nav-item"><span class="nav-link text-muted">{{ request.session.username }}</span></li>
         <li class="nav-item">
           <form action="/auth/logout" method="post" class="d-inline">
+            {{ csrf_input(request) | safe }}
             <button type="submit" class="btn btn-sm btn-outline-secondary ms-1">Logout</button>
           </form>
         </li>

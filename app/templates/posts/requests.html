@@ -18,9 +18,11 @@
       </div>
       <div class="d-flex gap-2">
         <form action="/posts/{{ post.id }}/requests/{{ m.id }}/accept" method="post">
+          {{ csrf_input(request) | safe }}
           <button class="btn btn-sm btn-success">Accept</button>
         </form>
         <form action="/posts/{{ post.id }}/requests/{{ m.id }}/deny" method="post">
+          {{ csrf_input(request) | safe }}
           <button class="btn btn-sm btn-danger">Deny</button>
         </form>
       </div>
