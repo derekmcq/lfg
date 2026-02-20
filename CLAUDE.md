@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-LFG ("Looking For Group") — a FastAPI web app where users post and join gaming groups. Stack: FastAPI + PostgreSQL + Jinja2 + Bootstrap 5.
+LFG ("Looking For Group") — a FastAPI web app where users post and join gaming groups. Stack: FastAPI + PostgreSQL + Jinja2 + Bootstrap 5 (dark theme).
 
 ## Commands
 
@@ -19,23 +19,35 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # Database tables are created automatically on startup via create_all
+# No migrations — schema changes require manual ALTER TABLE or dropping/recreating tables in psql:
+#   psql -U lfguser -d lfg -h localhost (password: lfgpass)
 ```
 
 ## Architecture
 
-**Entry point:** `app/main.py` — creates the FastAPI app, registers `SessionMiddleware`, includes all routers, and injects `get_flashed_messages` into every router's Jinja2 template environment via `mod.templates.env.globals`.
+**Entry point:** `app/main.py` — creates the FastAPI app, registers middleware, includes all routers, mounts static files at `/static`, and injects shared Jinja2 globals (`get_flashed_messages`, `csrf_input`, `get_unread_count`) into every router's template environment via `mod.templates.env.globals`.
 
-**Database:** SQLAlchemy ORM with a `DeclarativeBase` in `app/database.py`. Models live in `app/models/`. `Base.metadata.create_all` runs on startup — no migrations, schema changes require manual table drops in dev.
+**Database:** SQLAlchemy ORM with `DeclarativeBase` in `app/database.py`. Models in `app/models/`. `Base.metadata.create_all` runs on startup — no migrations.
 
-**Session-based auth:** User identity is stored in `request.session["user_id"]` and `request.session["username"]` (Starlette `SessionMiddleware`). `get_current_user` in `app/dependencies.py` looks up the user from the session on every request. There are no JWT tokens or OAuth flows.
+**Session-based auth:** User identity stored in `request.session["user_id"]` and `request.session["username"]` (Starlette `SessionMiddleware`). `get_current_user` in `app/dependencies.py` looks up the user from the session on every request. No JWT or OAuth.
 
-**Flash messages:** Implemented manually in `app/flash.py` using `request.session["_flashes"]`. Messages are popped on read. `get_flashed_messages` is registered as a Jinja2 global so templates call it as `get_flashed_messages(request)`.
+**CSRF protection:** `app/csrf.py` provides `CSRFMiddleware` that validates a `_csrf_token` form field against `request.session["_csrf_token"]` on all non-safe methods. `csrf_input(request)` helper generates the hidden input. Only validates `application/x-www-form-urlencoded` — JSON API endpoints (like `/api/*`) pass through without CSRF.
 
-**Templates:** Each router module has its own `templates = Jinja2Templates(...)` instance at module level. `main.py` patches all of them with shared globals after import. Templates use `request.session.username` (not a standalone `session` variable).
+**Flash messages:** `app/flash.py` stores messages in `request.session["_flashes"]`, popped on read. Registered as a Jinja2 global.
 
-**Membership model:** Three statuses — `pending`, `accepted`, `denied`. A `UniqueConstraint("user_id", "post_id")` enforces one row per user per post; re-requests after denial update the existing row rather than inserting a new one.
+**Templates:** Each router module has its own `Jinja2Templates` instance. `main.py` patches all of them with shared globals after import. The `api` router has no templates and is excluded from this loop. Templates access session via `request.session.username`.
 
-**Member counts:** The post author is never in the `memberships` table but occupies one slot. All member count displays and capacity checks add `+1` to account for the author.
+**Middleware order:** SessionMiddleware (outermost) → CSRFMiddleware → Router. SessionMiddleware must be added last so the session is populated before CSRF runs.
+
+**Membership model:** Three statuses — `pending`, `accepted`, `denied`. `UniqueConstraint("user_id", "post_id")` enforces one row per user per post; re-requests after denial update the existing row.
+
+**Member counts:** The post author is never in the `memberships` table but occupies one slot. All displays and capacity checks add `+1` for the author.
+
+**Multi-platform posts:** Platforms stored as comma-separated string in `Post.platform` (String(200)). `Post.platform_list` property splits into a list. `VALID_PLATFORMS` in `app/schemas/post.py` defines the canonical set: PC, PlayStation, Xbox, Nintendo Switch, Mobile, Other.
+
+**IGDB integration:** `app/igdb.py` provides game search with cover images and platform data. OAuth token cached in-memory. `app/routers/api.py` exposes `GET /api/games/search?q=...` as a JSON endpoint. Frontend JS (`app/static/js/game-search.js`) implements typeahead with 300ms debounce, renders dropdown with covers, and auto-checks platform checkboxes on game selection. Config: `IGDB_CLIENT_ID` and `IGDB_CLIENT_SECRET` in `.env`.
+
+**Validation:** Registration uses regex + profanity checks (`better-profanity`). Post descriptions also have profanity validation. Form errors render inline (re-render form with `errors` dict, not flash messages).
 
 **All POST routes use Post-Redirect-Get** (redirect with 303 after mutations).
 
@@ -43,9 +55,13 @@ uvicorn app.main:app --reload
 
 | File | Purpose |
 |------|---------|
-| `app/main.py` | App factory, middleware, router wiring, Jinja2 global injection |
-| `app/models/membership.py` | Core join-request logic lives here (statuses, constraints) |
+| `app/main.py` | App factory, middleware, router wiring, static mount, Jinja2 global injection |
+| `app/csrf.py` | CSRF middleware and `csrf_input` helper |
+| `app/igdb.py` | IGDB API client: token caching, game search, platform mapping |
+| `app/models/membership.py` | Join-request logic (statuses, unique constraint) |
+| `app/routers/posts.py` | Post CRUD + filtering + profanity validation |
 | `app/routers/memberships.py` | All join/leave/accept/deny endpoints |
-| `app/routers/posts.py` | CRUD + `ilike` filtering |
-| `app/schemas/post.py` | `VALID_PLATFORMS` list used by both router and templates |
-| `app/flash.py` | Flash message implementation |
+| `app/routers/api.py` | JSON API endpoints (game search) |
+| `app/schemas/post.py` | `VALID_PLATFORMS` list used by router, templates, and IGDB mapping |
+| `app/static/js/game-search.js` | Client-side IGDB typeahead search |
+| `app/templates/base.html` | Layout, navbar, dark theme styles, flash messages, JS includes |
