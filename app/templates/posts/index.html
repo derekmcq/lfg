@@ -37,7 +37,12 @@
     <div class="card h-100">
       <div class="card-header d-flex justify-content-between align-items-start">
         <div>
-          <h5 class="mb-1">{{ post.game }}</h5>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            {% if post.game_image %}
+            <img src="{{ post.game_image }}" alt="" style="width:40px; height:53px; object-fit:cover; border-radius:4px;">
+            {% endif %}
+            <h5 class="mb-0">{{ post.game }}</h5>
+          </div>
           {% for p in post.platform_list %}<span class="badge bg-secondary me-1">{{ p }}</span>{% endfor %}
         </div>
         <span class="badge bg-primary">

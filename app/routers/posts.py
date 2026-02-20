@@ -66,6 +66,7 @@ def new_post_form(request: Request, db: Session = Depends(get_db)):
 def create_post(
     request: Request,
     game: str = Form(...),
+    game_image: Optional[str] = Form(None),
     platform: list[str] = Form(...),
     description: str = Form(...),
     max_players: int = Form(4),
@@ -81,8 +82,9 @@ def create_post(
         errors["description"] = "Description contains inappropriate language."
 
     if errors:
-        form = {"game": game, "platform": platform, "description": description,
-                "max_players": max_players, "scheduled_at": scheduled_at or ""}
+        form = {"game": game, "game_image": game_image or "", "platform": platform,
+                "description": description, "max_players": max_players,
+                "scheduled_at": scheduled_at or ""}
         return templates.TemplateResponse(
             "posts/create.html",
             {"request": request, "platforms": VALID_PLATFORMS, "form": form,
@@ -100,6 +102,7 @@ def create_post(
     post = Post(
         author_id=current_user.id,
         game=game,
+        game_image=game_image or None,
         platform=",".join(platform),
         description=description,
         max_players=max_players,
@@ -171,6 +174,7 @@ def edit_post(
     request: Request,
     post_id: int,
     game: str = Form(...),
+    game_image: Optional[str] = Form(None),
     platform: list[str] = Form(...),
     description: str = Form(...),
     max_players: int = Form(...),
@@ -198,6 +202,7 @@ def edit_post(
             pass
 
     post.game = game
+    post.game_image = game_image or None
     post.platform = ",".join(platform)
     post.description = description
     post.max_players = max_players

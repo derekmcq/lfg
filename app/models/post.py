@@ -14,6 +14,8 @@ class Post(Base):
     game: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     platform: Mapped[str] = mapped_column(String(200), index=True, nullable=False)
 
+    game_image: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
     @property
     def platform_list(self) -> list[str]:
         return [p.strip() for p in self.platform.split(",") if p.strip()]

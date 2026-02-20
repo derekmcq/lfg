@@ -16,6 +16,7 @@
         {% for post in my_posts %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
+            {% if post.game_image %}<img src="{{ post.game_image }}" alt="" style="width:24px; height:32px; object-fit:cover; border-radius:3px; vertical-align:middle;">{% endif %}
             <a href="/posts/{{ post.id }}" class="fw-semibold text-decoration-none">{{ post.game }}</a>
             {% for p in post.platform_list %}<span class="badge bg-secondary ms-1">{{ p }}</span>{% endfor %}
           </div>
@@ -42,6 +43,7 @@
         {% for m in joined_groups %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
+            {% if m.post.game_image %}<img src="{{ m.post.game_image }}" alt="" style="width:24px; height:32px; object-fit:cover; border-radius:3px; vertical-align:middle;">{% endif %}
             <a href="/posts/{{ m.post.id }}" class="fw-semibold text-decoration-none">{{ m.post.game }}</a>
             {% for p in m.post.platform_list %}<span class="badge bg-secondary ms-1">{{ p }}</span>{% endfor %}
             <small class="text-muted ms-2">by {{ m.post.author.username }}</small>

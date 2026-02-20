@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
@@ -11,7 +12,7 @@ from app.routers.notifications import get_unread_count
 # Import models so Base.metadata knows about them before create_all
 import app.models  # noqa: F401
 
-from app.routers import auth, posts, memberships, dashboard, notifications
+from app.routers import auth, posts, memberships, dashboard, notifications, api
 
 app = FastAPI(title="LFG")
 
@@ -24,6 +25,9 @@ app.include_router(posts.router)
 app.include_router(memberships.router)
 app.include_router(dashboard.router)
 app.include_router(notifications.router)
+app.include_router(api.router)
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Inject globals into every router's Jinja2 environment
 for mod in (auth, posts, memberships, dashboard, notifications):

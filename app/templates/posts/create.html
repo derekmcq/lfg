@@ -13,8 +13,13 @@
           {{ csrf_input(request) | safe }}
           <div class="mb-3">
             <label class="form-label">Game</label>
-            <input type="text" name="game" class="form-control" required maxlength="100"
-                   value="{{ form.game or '' }}">
+            <div class="position-relative">
+              <input type="text" name="game" id="game-input" class="form-control"
+                     required maxlength="100" autocomplete="off"
+                     value="{{ form.game or '' }}">
+              <input type="hidden" name="game_image" id="game-image-input"
+                     value="{{ form.game_image or '' }}">
+            </div>
           </div>
           <div class="mb-3">
             <label class="form-label">Platform(s)</label>
